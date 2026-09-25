@@ -10,7 +10,7 @@
 body{margin:0;background:#050708;color:#e6fbff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
 input,button,select{font-family:inherit}
 h1,h2,h3{margin:0 0 4px;font-weight:600;color:#bff3ff}
-.wrap{max-width:960px;margin:0 auto;padding:22px 18px 60px}
+.wrap{max-width:960px;margin:0 auto;padding:18px 14px 60px}
 .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;flex-wrap:wrap}
 .hd h1{font-size:20px;letter-spacing:.08em}
 .who{font-size:13px;color:#8fb8c6}
@@ -26,10 +26,12 @@ h1,h2,h3{margin:0 0 4px;font-weight:600;color:#bff3ff}
 .stat span{font-size:12px;color:#8fb8c6}
 input[type=text],input[type=email],input[type=password],input[type=number]{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(95,220,255,.3);background:rgba(90,220,255,.05);color:#e6fbff;font-size:14px}
 label{display:block;font-size:12px;color:#8fb8c6;margin:8px 0 3px}
-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
-th,td{text-align:left;padding:8px 6px;border-bottom:1px solid rgba(95,220,255,.12);vertical-align:top}
-th{color:#8fb8c6;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
-tr:hover td{background:rgba(90,220,255,.04)}
+.plist{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.prow{border:1px solid rgba(95,220,255,.14);border-radius:12px;padding:10px 12px;font-size:13px}
+.prow .pmail{font-weight:600;word-break:break-all}
+.prow .pmeta{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0;color:#cdeef7}
+.prow .pmeta b{color:#7ee6ff}
+.prow .pup{color:#8fb8c6;font-size:12.5px;margin-bottom:8px;line-height:1.5}
 .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid rgba(95,220,255,.3);color:#9be3f5;margin-right:4px}
 .pill.on{background:rgba(90,220,255,.15)}
 .row{display:flex;gap:6px;flex-wrap:wrap}
@@ -38,7 +40,7 @@ tr:hover td{background:rgba(90,220,255,.04)}
 .msg.ok{color:#8ef0b8}
 .editbox{display:none;background:rgba(0,0,0,.35);border:1px solid rgba(95,220,255,.25);border-radius:12px;padding:12px;margin-top:8px}
 .editbox.on{display:block}
-.editbox .grid2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.editbox .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
 #login{max-width:340px;margin:16vh auto 0;padding:0 20px;text-align:center}
 #login h1{font-size:26px;letter-spacing:.15em;margin-bottom:6px}
 #login p{color:#8fb8c6;font-size:13px;margin:0 0 18px}
@@ -77,15 +79,13 @@ small.muted{color:#6a8b96}
     <h2>Giocatori</h2>
     <input id="search" type="text" placeholder="cerca per email…" style="margin-top:8px">
     <div class="msg" id="listMsg"></div>
-    <table id="tbl"><thead><tr>
-      <th>Email</th><th>Gemme</th><th>Livello</th><th>Potenziamenti</th><th></th>
-    </tr></thead><tbody id="tbody"></tbody></table>
+    <div class="plist" id="tbody"></div>
   </div>
 
   <div class="card">
     <h2>Codice promo</h2>
     <div id="promoInfo" class="msg"></div>
-    <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+    <div class="grid2" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
       <div><label>Nuovo codice</label><input id="pCode" type="text" placeholder="lascia vuoto per non cambiarlo"></div>
       <div><label>Gemme</label><input id="pGems" type="number" min="1"></div>
       <div><label>Attesa riuso (ore, solo admin)</label><input id="pCooldown" type="number" min="0"></div>
@@ -191,27 +191,25 @@ async function loadPlayers(q){
 function renderPlayers(){
   $('tbody').innerHTML=players.map(p=>{
     const id='r_'+p.user_id.replace(/[^a-zA-Z0-9]/g,'');
-    return '<tr>'
-      +'<td>'+p.email+(p.is_admin?' <span class="pill on">admin</span>':'')+'</td>'
-      +'<td>◈ '+p.credits+'</td>'
-      +'<td>'+p.best_level+'</td>'
-      +'<td>'+upSummary(p.upgrades)+'</td>'
-      +'<td><div class="row">'
+    return '<div class="prow">'
+      +'<div class="pmail">'+p.email+(p.is_admin?' <span class="pill on">admin</span>':'')+'</div>'
+      +'<div class="pmeta"><span>Gemme <b>◈ '+p.credits+'</b></span><span>Livello <b>'+p.best_level+'</b></span></div>'
+      +'<div class="pup">'+upSummary(p.upgrades)+'</div>'
+      +'<div class="row">'
         +'<button class="btn editB" data-id="'+p.user_id+'">Modifica</button>'
         +'<button class="btn resetB" data-id="'+p.user_id+'">Azzera</button>'
         +(p.is_admin?'':'<button class="btn danger delB" data-id="'+p.user_id+'">Elimina</button>')
       +'</div>'
       +'<div class="editbox" id="'+id+'">'
         +'<div class="grid2"><div><label>Gemme</label><input type="number" class="fCr" value="'+p.credits+'"></div>'
-        +'<div><label>Livello migliore</label><input type="number" class="fBest" value="'+p.best_level+'"></div>'
-        +'<div></div></div>'
-        +'<div class="grid2" style="grid-template-columns:repeat(6,1fr);margin-top:8px">'
+        +'<div><label>Livello migliore</label><input type="number" class="fBest" value="'+p.best_level+'"></div></div>'
+        +'<div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(70px,1fr));margin-top:8px">'
         +Object.keys(UP_LABELS).map(k=>'<div><label>'+UP_LABELS[k]+'</label><input type="number" min="0" class="fUp" data-k="'+k+'" value="'+((p.upgrades||{})[k]||0)+'"></div>').join('')
         +'</div>'
         +'<div class="row" style="margin-top:8px"><button class="btn primary saveB" data-id="'+p.user_id+'">Salva</button>'
         +'<button class="btn cancelB" data-id="'+p.user_id+'">Annulla</button></div>'
       +'</div>'
-      +'</td></tr>';
+      +'</div>';
   }).join('');
 }
 $('tbody').addEventListener('click',async e=>{
