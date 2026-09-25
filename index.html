@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DarkLabirint · Admin</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#050708;color:#e6fbff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+input,button,select{font-family:inherit}
+h1,h2,h3{margin:0 0 4px;font-weight:600;color:#bff3ff}
+.wrap{max-width:960px;margin:0 auto;padding:22px 18px 60px}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.hd h1{font-size:20px;letter-spacing:.08em}
+.who{font-size:13px;color:#8fb8c6}
+.btn{border:1px solid rgba(95,220,255,.35);background:rgba(90,220,255,.06);color:#e6fbff;border-radius:12px;padding:9px 14px;font-size:13px;cursor:pointer}
+.btn:hover{border-color:#5fdcff}
+.btn.primary{background:#5fdcff;color:#04141a;border-color:#5fdcff;font-weight:600}
+.btn.danger{border-color:rgba(255,110,120,.5);color:#ffb3ba}
+.btn:disabled{opacity:.4;cursor:default}
+.card{border:1px solid rgba(95,220,255,.18);border-radius:16px;background:rgba(90,220,255,.04);padding:16px 18px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:10px}
+.stat{border:1px solid rgba(95,220,255,.16);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-size:22px;color:#7ee6ff}
+.stat span{font-size:12px;color:#8fb8c6}
+input[type=text],input[type=email],input[type=password],input[type=number]{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(95,220,255,.3);background:rgba(90,220,255,.05);color:#e6fbff;font-size:14px}
+label{display:block;font-size:12px;color:#8fb8c6;margin:8px 0 3px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid rgba(95,220,255,.12);vertical-align:top}
+th{color:#8fb8c6;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+tr:hover td{background:rgba(90,220,255,.04)}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid rgba(95,220,255,.3);color:#9be3f5;margin-right:4px}
+.pill.on{background:rgba(90,220,255,.15)}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.msg{font-size:13px;margin:8px 0;min-height:18px}
+.msg.err{color:#ff8b96}
+.msg.ok{color:#8ef0b8}
+.editbox{display:none;background:rgba(0,0,0,.35);border:1px solid rgba(95,220,255,.25);border-radius:12px;padding:12px;margin-top:8px}
+.editbox.on{display:block}
+.editbox .grid2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#login{max-width:340px;margin:16vh auto 0;padding:0 20px;text-align:center}
+#login h1{font-size:26px;letter-spacing:.15em;margin-bottom:6px}
+#login p{color:#8fb8c6;font-size:13px;margin:0 0 18px}
+.hide{display:none!important}
+small.muted{color:#6a8b96}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>DARKLABIRINT</h1>
+  <p>Pannello amministrazione</p>
+  <label>Email</label>
+  <input id="em" type="email" autocomplete="email" placeholder="la tua email">
+  <label>Password</label>
+  <input id="pw" type="password" autocomplete="current-password" placeholder="password">
+  <div class="msg err" id="loginMsg"></div>
+  <button class="btn primary" id="loginBtn" style="width:100%;margin-top:6px">Accedi</button>
+</div>
+
+<div class="wrap hide" id="app">
+  <div class="hd">
+    <h1>DARKLABIRINT · ADMIN</h1>
+    <div class="row" style="align-items:center">
+      <span class="who" id="whoTxt"></span>
+      <button class="btn" id="outBtn">Esci</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Statistiche</h2>
+    <div class="grid" id="stats"></div>
+  </div>
+
+  <div class="card">
+    <h2>Giocatori</h2>
+    <input id="search" type="text" placeholder="cerca per email…" style="margin-top:8px">
+    <div class="msg" id="listMsg"></div>
+    <table id="tbl"><thead><tr>
+      <th>Email</th><th>Gemme</th><th>Livello</th><th>Potenziamenti</th><th></th>
+    </tr></thead><tbody id="tbody"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>Codice promo</h2>
+    <div id="promoInfo" class="msg"></div>
+    <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div><label>Nuovo codice</label><input id="pCode" type="text" placeholder="lascia vuoto per non cambiarlo"></div>
+      <div><label>Gemme</label><input id="pGems" type="number" min="1"></div>
+      <div><label>Attesa riuso (ore, solo admin)</label><input id="pCooldown" type="number" min="0"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" id="pSave">Salva</button>
+      <button class="btn" id="pReactivate">Riattiva codice attuale (senza cambiarlo)</button>
+    </div>
+    <div class="msg" id="promoMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>Amministratori</h2>
+    <div id="adminList"></div>
+    <div class="row" style="margin-top:10px">
+      <input id="newAdminEm" type="email" placeholder="email da rendere amministratore" style="flex:1;min-width:200px">
+      <button class="btn primary" id="addAdminBtn">Aggiungi</button>
+    </div>
+    <div class="msg" id="adminMsg"></div>
+    <small class="muted">Funziona solo se quell'email ha già creato un account nel gioco.</small>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL='https://dsyhimheqciecumkdfxg.supabase.co';
+const SB_KEY='sb_publishable_hH20VRTpi2bpRnAez1vyVg_0ka1Uuvx';
+const $=id=>document.getElementById(id);
+let sb=null,user=null,players=[];
+
+function errMsg(e){
+  const m=((e&&e.message)||'').toLowerCase();
+  if(m.includes('invalid login'))return 'Email o password errate.';
+  if(m.includes('non autorizzato'))return 'Questo account non è amministratore.';
+  if(m.includes('fetch')||m.includes('network')||m.includes('failed to')||m.includes('load failed'))return 'Connessione assente. Riprova.';
+  return (e&&e.message)?e.message:'Errore: riprova.';
+}
+function setMsg(id,t,ok){const m=$(id);m.textContent=t||'';m.classList.toggle('ok',!!ok);m.classList.toggle('err',!ok&&!!t);}
+
+async function boot(){
+  if(!(window.supabase&&window.supabase.createClient)){setMsg('loginMsg','Impossibile caricare la libreria Supabase.');return;}
+  sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+  const {data}=await sb.auth.getSession();
+  if(data&&data.session)await onSession(data.session);
+  sb.auth.onAuthStateChange((_ev,session)=>{setTimeout(()=>onSession(session),0);});
+}
+async function onSession(session){
+  if(!session){user=null;$('app').classList.add('hide');$('login').classList.remove('hide');return;}
+  user=session.user;
+  try{
+    await refreshAll();
+    $('login').classList.add('hide');$('app').classList.remove('hide');
+    $('whoTxt').textContent=user.email;
+  }catch(e){
+    setMsg('loginMsg',errMsg(e));
+    await sb.auth.signOut();
+  }
+}
+async function submitLogin(){
+  setMsg('loginMsg','');$('loginBtn').disabled=true;
+  try{
+    const {error}=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+    if(error)throw error;
+  }catch(e){setMsg('loginMsg',errMsg(e));}
+  finally{$('loginBtn').disabled=false;}
+}
+$('loginBtn').addEventListener('click',submitLogin);
+$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')submitLogin();});
+$('outBtn').addEventListener('click',()=>sb.auth.signOut());
+
+async function refreshAll(){
+  await Promise.all([loadStats(),loadPlayers(),loadPromo(),loadAdmins()]);
+}
+
+async function loadStats(){
+  const {data,error}=await sb.rpc('eco_admin_stats');
+  if(error)throw error;
+  $('stats').innerHTML=[
+    ['Giocatori',data.users],
+    ['Gemme totali',data.total_credits],
+    ['Livello medio',data.avg_best],
+    ['Senza pause sbloccato',data.nopause_count],
+    ['Amministratori',data.admins]
+  ].map(([l,v])=>'<div class="stat"><b>'+v+'</b><span>'+l+'</span></div>').join('');
+}
+
+const UP_LABELS={radar:'Radar',recharge:'Ricarica',lives:'Vite',stealth:'Stealth',speed:'Velocità',nopause:'No-pause'};
+function upSummary(u){
+  u=u||{};
+  const parts=Object.keys(UP_LABELS).filter(k=>u[k]).map(k=>UP_LABELS[k]+' '+u[k]);
+  return parts.length?parts.join(' · '):'—';
+}
+async function loadPlayers(q){
+  setMsg('listMsg','Carico…',true);
+  const {data,error}=await sb.rpc('eco_admin_list_profiles',{p_search:q||null,p_limit:100,p_offset:0});
+  if(error){setMsg('listMsg',errMsg(error));return;}
+  players=data||[];
+  setMsg('listMsg',players.length+' giocatori trovati'+(q?' per «'+q+'»':''),true);
+  renderPlayers();
+}
+function renderPlayers(){
+  $('tbody').innerHTML=players.map(p=>{
+    const id='r_'+p.user_id.replace(/[^a-zA-Z0-9]/g,'');
+    return '<tr>'
+      +'<td>'+p.email+(p.is_admin?' <span class="pill on">admin</span>':'')+'</td>'
+      +'<td>◈ '+p.credits+'</td>'
+      +'<td>'+p.best_level+'</td>'
+      +'<td>'+upSummary(p.upgrades)+'</td>'
+      +'<td><div class="row">'
+        +'<button class="btn editB" data-id="'+p.user_id+'">Modifica</button>'
+        +'<button class="btn resetB" data-id="'+p.user_id+'">Azzera</button>'
+        +(p.is_admin?'':'<button class="btn danger delB" data-id="'+p.user_id+'">Elimina</button>')
+      +'</div>'
+      +'<div class="editbox" id="'+id+'">'
+        +'<div class="grid2"><div><label>Gemme</label><input type="number" class="fCr" value="'+p.credits+'"></div>'
+        +'<div><label>Livello migliore</label><input type="number" class="fBest" value="'+p.best_level+'"></div>'
+        +'<div></div></div>'
+        +'<div class="grid2" style="grid-template-columns:repeat(6,1fr);margin-top:8px">'
+        +Object.keys(UP_LABELS).map(k=>'<div><label>'+UP_LABELS[k]+'</label><input type="number" min="0" class="fUp" data-k="'+k+'" value="'+((p.upgrades||{})[k]||0)+'"></div>').join('')
+        +'</div>'
+        +'<div class="row" style="margin-top:8px"><button class="btn primary saveB" data-id="'+p.user_id+'">Salva</button>'
+        +'<button class="btn cancelB" data-id="'+p.user_id+'">Annulla</button></div>'
+      +'</div>'
+      +'</td></tr>';
+  }).join('');
+}
+$('tbody').addEventListener('click',async e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const id=b.dataset.id,box=$('r_'+id.replace(/[^a-zA-Z0-9]/g,''));
+  if(b.classList.contains('editB')){box.classList.add('on');return;}
+  if(b.classList.contains('cancelB')){box.classList.remove('on');return;}
+  if(b.classList.contains('saveB')){
+    const cr=parseInt(box.querySelector('.fCr').value,10)||0;
+    const best=parseInt(box.querySelector('.fBest').value,10)||0;
+    const up={};box.querySelectorAll('.fUp').forEach(i=>{const v=parseInt(i.value,10)||0;if(v>0)up[i.dataset.k]=v;});
+    b.disabled=true;
+    try{
+      const {error}=await sb.rpc('eco_admin_set_profile',{p_user_id:id,p_credits:cr,p_upgrades:up,p_best:best});
+      if(error)throw error;
+      await loadPlayers($('search').value.trim());await loadStats();
+    }catch(err){alert(errMsg(err));}
+    b.disabled=false;
+    return;
+  }
+  if(b.classList.contains('resetB')){
+    if(!confirm('Azzerare gemme, potenziamenti e livello di questo giocatore? Il suo login resta valido.'))return;
+    try{const {error}=await sb.rpc('eco_admin_reset_profile',{p_user_id:id});if(error)throw error;
+      await loadPlayers($('search').value.trim());await loadStats();
+    }catch(err){alert(errMsg(err));}
+    return;
+  }
+  if(b.classList.contains('delB')){
+    if(!confirm('Eliminare del tutto questo account? Non si può annullare.'))return;
+    try{const {error}=await sb.rpc('eco_admin_delete_user',{p_user_id:id});if(error)throw error;
+      await loadPlayers($('search').value.trim());await loadStats();
+    }catch(err){alert(errMsg(err));}
+  }
+});
+let searchT=null;
+$('search').addEventListener('input',()=>{clearTimeout(searchT);searchT=setTimeout(()=>loadPlayers($('search').value.trim()),300);});
+
+function fmtWait(sec){sec=Math.max(0,sec|0);const h=Math.floor(sec/3600),m=Math.ceil((sec%3600)/60);return h>0?h+' h'+(m&&m<60?' '+m+' min':''):m+' min';}
+async function loadPromo(){
+  const {data,error}=await sb.rpc('eco_admin_promo_status');
+  if(error){setMsg('promoInfo',errMsg(error));return;}
+  $('pGems').value=data.gems||'';$('pCooldown').value=data.cooldown_hours||'';
+  let t='Gemme: <b>◈ '+data.gems+'</b> · attesa riuso admin: <b>'+data.cooldown_hours+' h</b> · ';
+  t+=data.consumed_at?('già riscattato da un giocatore normale ('+(data.consumed_by_email||'?')+') il '+new Date(data.consumed_at).toLocaleString('it-IT'))
+                       :'ancora disponibile per il primo giocatore normale che lo usa';
+  $('promoInfo').innerHTML=t;
+}
+$('pSave').addEventListener('click',async()=>{
+  setMsg('promoMsg','');$('pSave').disabled=true;
+  try{
+    const code=$('pCode').value.trim();
+    if(!code){setMsg('promoMsg','Inserisci un codice per salvare (per cambiare solo gemme/attesa serve comunque riscrivere il codice attuale).');return;}
+    const {error}=await sb.rpc('eco_admin_set_promo',{p_code:code,p_gems:parseInt($('pGems').value,10)||null,p_cooldown_hours:parseInt($('pCooldown').value,10)});
+    if(error)throw error;
+    $('pCode').value='';
+    setMsg('promoMsg','Salvato. Il codice è di nuovo utilizzabile una volta da un giocatore normale.',true);
+    await loadPromo();
+  }catch(e){setMsg('promoMsg',errMsg(e));}
+  finally{$('pSave').disabled=false;}
+});
+$('pReactivate').addEventListener('click',async()=>{
+  setMsg('promoMsg','');
+  try{
+    const {error}=await sb.rpc('eco_admin_reactivate_promo');
+    if(error)throw error;
+    setMsg('promoMsg','Codice riattivato: un giocatore normale potrà usarlo di nuovo.',true);
+    await loadPromo();
+  }catch(e){setMsg('promoMsg',errMsg(e));}
+});
+
+async function loadAdmins(){
+  const {data,error}=await sb.rpc('eco_admin_list_admins');
+  if(error){$('adminList').textContent=errMsg(error);return;}
+  $('adminList').innerHTML=(data||[]).map(a=>
+    '<span class="pill on" style="margin:0 6px 6px 0;display:inline-flex;gap:6px;align-items:center">'+a.email
+    +(a.user_id===user.id?'':' <button class="btn" style="padding:1px 8px;font-size:11px" data-id="'+a.user_id+'" data-em="'+a.email+'">rimuovi</button>')
+    +'</span>'
+  ).join('')||'<small class="muted">nessuno</small>';
+}
+$('adminList').addEventListener('click',async e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(!confirm('Togliere i permessi di amministratore a '+b.dataset.em+'?'))return;
+  try{
+    const {data,error}=await sb.rpc('eco_admin_set_admin',{p_email:b.dataset.em,p_make:false});
+    if(error)throw error;
+    await loadAdmins();await loadPlayers($('search').value.trim());
+  }catch(err){alert(errMsg(err));}
+});
+$('addAdminBtn').addEventListener('click',async()=>{
+  setMsg('adminMsg','');
+  const em=$('newAdminEm').value.trim();
+  if(!em){setMsg('adminMsg','Inserisci un\'email.');return;}
+  try{
+    const {data,error}=await sb.rpc('eco_admin_set_admin',{p_email:em,p_make:true});
+    if(error)throw error;
+    if(data.status==='not_found'){setMsg('adminMsg','Nessun account con questa email: deve prima registrarsi nel gioco.');return;}
+    setMsg('adminMsg','Fatto.',true);$('newAdminEm').value='';
+    await loadAdmins();await loadPlayers($('search').value.trim());
+  }catch(e){setMsg('adminMsg',errMsg(e));}
+});
+
+boot();
+</script>
+</body>
+</html>
