@@ -51,8 +51,8 @@ small.muted{color:#6a8b96}
 <div id="login">
   <h1>DARKLABIRINT</h1>
   <p>Pannello amministrazione</p>
-  <label>Email</label>
-  <input id="em" type="email" autocomplete="email" placeholder="la tua email">
+  <label>Nome utente</label>
+  <input id="em" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="nome utente">
   <label>Password</label>
   <input id="pw" type="password" autocomplete="current-password" placeholder="password">
   <div class="msg err" id="loginMsg"></div>
@@ -127,7 +127,7 @@ function setMsg(id,t,ok){const m=$(id);m.textContent=t||'';m.classList.toggle('o
 
 async function boot(){
   if(!(window.supabase&&window.supabase.createClient)){setMsg('loginMsg','Impossibile caricare la libreria Supabase.');return;}
-  sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+  sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'dl-admin-auth-token'}});
   const {data}=await sb.auth.getSession();
   if(data&&data.session)await onSession(data.session);
   sb.auth.onAuthStateChange((_ev,session)=>{setTimeout(()=>onSession(session),0);});
@@ -147,7 +147,9 @@ async function onSession(session){
 async function submitLogin(){
   setMsg('loginMsg','');$('loginBtn').disabled=true;
   try{
-    const {error}=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+    const v=$('em').value.trim();
+    const email=v.includes('@')?v:(v.toLowerCase()+'@darklabirint.app');
+    const {error}=await sb.auth.signInWithPassword({email,password:$('pw').value});
     if(error)throw error;
   }catch(e){setMsg('loginMsg',errMsg(e));}
   finally{$('loginBtn').disabled=false;}
